@@ -80,7 +80,7 @@ a {
 .features-section,
 .cta,
 .site-footer {
-    width: min(1180px, calc(100% - 3rem));
+    width: 90%;
     margin-inline: auto;
 }
 
