@@ -1,8 +1,59 @@
+import type { ComponentType, ReactNode } from "react";
+
 import "./App.css";
 import beaconIcon from "./assets/beacon-icon.png";
 import beaconApp from "./assets/beacon-app.png";
 
-const githubUrl = "https://github.com/marcomtzan/Beacon";
+const GITHUB_URL = "https://github.com/marcomtzan/Beacon";
+
+const NAVIGATION_LINKS = [
+    { label: "Features", href: "#features" },
+    { label: "Why Local", href: "#why-local" },
+    { label: "Roadmap", href: "#roadmap" }
+] as const;
+
+const RESOURCE_LINKS = NAVIGATION_LINKS;
+
+const COMMUNITY_LINKS = [
+    { label: "GitHub", href: GITHUB_URL },
+    { label: "Issues", href: `${GITHUB_URL}/issues` },
+    { label: "Discussions", href: `${GITHUB_URL}/discussions` }
+] as const;
+
+type IconComponent = ComponentType;
+
+interface Feature {
+    title: string;
+    description: string;
+    Icon: IconComponent;
+}
+
+const FEATURES: Feature[] = [
+    {
+        title: "Local First",
+        description:
+            "All data stays on your machine. No cloud uploads. No tracking. Complete privacy.",
+        Icon: ShieldIcon
+    },
+    {
+        title: "Private AI",
+        description:
+            "Run powerful models locally with Ollama. Your conversations never leave your device.",
+        Icon: BrainIcon
+    },
+    {
+        title: "Persistent Memory",
+        description:
+            "Beacon remembers your conversations and context so you can pick up where you left off.",
+        Icon: DocumentIcon
+    },
+    {
+        title: "Fast & Lightweight",
+        description:
+            "Built with modern technologies for speed and efficiency. No bloat. Just performance.",
+        Icon: BoltIcon
+    }
+];
 
 export default function App() {
     return (
@@ -24,31 +75,29 @@ function Header() {
     return (
         <header className="site-header">
             <div className="header-content">
-                <a className="brand" href="#top" aria-label="Beacon home">
-                    <img
-                        src={beaconIcon}
-                        alt=""
-                        className="brand-icon"
-                    />
-                    <span>Beacon</span>
-                </a>
+                <Brand href="#top" />
 
-                <nav className="desktop-navigation" aria-label="Main navigation">
-                    <a href="#features">Features</a>
-                    <a href="#why-local">Why Local</a>
-                    <a href="#roadmap">Roadmap</a>
-                    <a
-                        href={githubUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
+                <nav
+                    className="desktop-navigation"
+                    aria-label="Main navigation"
+                >
+                    {NAVIGATION_LINKS.map(link => (
+                        <a key={link.href} href={link.href}>
+                            {link.label}
+                        </a>
+                    ))}
+
+                    <ExternalLink href={GITHUB_URL}>
                         GitHub
-                    </a>
+                    </ExternalLink>
 
-                    <a className="button button-primary button-small" href="#download">
-                        <DownloadIcon />
+                    <ButtonLink
+                        href="#download"
+                        className="button-small"
+                        icon={<DownloadIcon />}
+                    >
                         Download
-                    </a>
+                    </ButtonLink>
                 </nav>
             </div>
         </header>
@@ -78,95 +127,148 @@ function Hero() {
                     </p>
 
                     <div className="hero-actions">
-                        <a className="button button-primary" href="#download">
-                            <WindowsIcon />
-                            Download for Windows
-                        </a>
-
-                        <a
-                            className="button button-secondary"
-                            href={githubUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                        <ButtonLink
+                            href="#download"
+                            icon={<WindowsIcon />}
                         >
-                            <GitHubIcon />
+                            Download for Windows
+                        </ButtonLink>
+
+                        <ButtonLink
+                            href={GITHUB_URL}
+                            variant="secondary"
+                            external
+                            icon={<GitHubIcon />}
+                        >
                             View on GitHub
-                        </a>
+                        </ButtonLink>
                     </div>
 
-                    <div className="trust-line">
-                        <ShieldIcon />
-                        <span>100% local</span>
-                        <span className="trust-separator">•</span>
-                        <span>Open source</span>
-                        <span className="trust-separator">•</span>
-                        <span>Your data stays on your machine</span>
-                    </div>
+                    <TrustLine />
                 </div>
 
-                <div className="product-preview">
-                    <div className="product-glow" />
-
-                    <img
-                        src={beaconApp}
-                        alt="Beacon application interface"
-                    />
-                </div>
+                <ProductPreview />
             </div>
         </section>
     );
 }
 
-function Features() {
-    const features = [
-        {
-            title: "Local First",
-            description:
-                "All data stays on your machine. No cloud uploads. No tracking. Complete privacy.",
-            icon: <ShieldIcon />
-        },
-        {
-            title: "Private AI",
-            description:
-                "Run powerful models locally with Ollama. Your conversations never leave your device.",
-            icon: <BrainIcon />
-        },
-        {
-            title: "Persistent Memory",
-            description:
-                "Beacon remembers your conversations and context so you can pick up where you left off.",
-            icon: <DocumentIcon />
-        },
-        {
-            title: "Fast & Lightweight",
-            description:
-                "Built with modern technologies for speed and efficiency. No bloat. Just performance.",
-            icon: <BoltIcon />
-        }
+function TrustLine() {
+    const trustItems = [
+        "100% local",
+        "Open source",
+        "Your data stays on your machine"
     ];
 
     return (
+        <div className="trust-line">
+            <ShieldIcon />
+
+            {trustItems.map((item, index) => (
+                <TrustItem
+                    key={item}
+                    showSeparator={index > 0}
+                >
+                    {item}
+                </TrustItem>
+            ))}
+        </div>
+    );
+}
+
+interface TrustItemProps {
+    children: ReactNode;
+    showSeparator: boolean;
+}
+
+function TrustItem({
+    children,
+    showSeparator
+}: TrustItemProps) {
+    return (
+        <>
+            {showSeparator && (
+                <span
+                    className="trust-separator"
+                    aria-hidden="true"
+                >
+                    •
+                </span>
+            )}
+
+            <span>{children}</span>
+        </>
+    );
+}
+
+function ProductPreview() {
+    return (
+        <div className="product-preview">
+            <div className="product-glow" />
+
+            <img
+                src={beaconApp}
+                alt="Beacon application interface"
+            />
+        </div>
+    );
+}
+
+function Features() {
+    return (
         <section className="features-section" id="features">
-            <div className="section-heading">
-                <h2>
-                    Built for privacy. Designed for productivity.
-                </h2>
-                <p>Everything you need in a modern AI workspace.</p>
-            </div>
+            <SectionHeading
+                title="Built for privacy. Designed for productivity."
+                description="Everything you need in a modern AI workspace."
+            />
 
             <div className="feature-grid">
-                {features.map(feature => (
-                    <article className="feature-card" key={feature.title}>
-                        <div className="feature-icon">{feature.icon}</div>
-
-                        <div>
-                            <h3>{feature.title}</h3>
-                            <p>{feature.description}</p>
-                        </div>
-                    </article>
+                {FEATURES.map(feature => (
+                    <FeatureCard
+                        key={feature.title}
+                        feature={feature}
+                    />
                 ))}
             </div>
         </section>
+    );
+}
+
+interface SectionHeadingProps {
+    title: string;
+    description: string;
+}
+
+function SectionHeading({
+    title,
+    description
+}: SectionHeadingProps) {
+    return (
+        <div className="section-heading">
+            <h2>{title}</h2>
+            <p>{description}</p>
+        </div>
+    );
+}
+
+interface FeatureCardProps {
+    feature: Feature;
+}
+
+function FeatureCard({
+    feature: { title, description, Icon }
+}: FeatureCardProps) {
+    return (
+        <article className="feature-card">
+            <div className="feature-icon">
+                <Icon />
+            </div>
+
+            <div>
+                <h3>{title}</h3>
+                <p>{description}</p>
+            </div>
+        </article>
     );
 }
 
@@ -181,26 +283,27 @@ function CallToAction() {
                 <div>
                     <h2>Ready to get started?</h2>
                     <p>
-                        Download Beacon and start your private AI workspace today.
+                        Download Beacon and start your private AI workspace
+                        today.
                     </p>
                 </div>
             </div>
 
             <div className="cta-actions">
-                <a className="button button-primary" href="#">
-                    <WindowsIcon />
+                <ButtonLink
+                    href="#"
+                    icon={<WindowsIcon />}
+                >
                     Download for Windows
-                </a>
+                </ButtonLink>
 
-                <a
+                <ExternalLink
+                    href={GITHUB_URL}
                     className="text-link"
-                    href={githubUrl}
-                    target="_blank"
-                    rel="noreferrer"
                 >
                     View on GitHub
                     <ExternalLinkIcon />
-                </a>
+                </ExternalLink>
             </div>
         </section>
     );
@@ -210,14 +313,7 @@ function Footer() {
     return (
         <footer className="site-footer">
             <div className="footer-brand">
-                <div className="brand footer-logo">
-                    <img
-                        src={beaconIcon}
-                        alt=""
-                        className="brand-icon"
-                    />
-                    <span>Beacon</span>
-                </div>
+                <Brand className="footer-logo" />
 
                 <p>
                     A local-first AI workspace.
@@ -226,19 +322,16 @@ function Footer() {
                 </p>
             </div>
 
-            <div className="footer-column">
-                <h3>Resources</h3>
-                <a href="#features">Features</a>
-                <a href="#why-local">Why Local</a>
-                <a href="#roadmap">Roadmap</a>
-            </div>
+            <FooterColumn
+                title="Resources"
+                links={RESOURCE_LINKS}
+            />
 
-            <div className="footer-column">
-                <h3>Community</h3>
-                <a href={githubUrl}>GitHub</a>
-                <a href={`${githubUrl}/issues`}>Issues</a>
-                <a href={`${githubUrl}/discussions`}>Discussions</a>
-            </div>
+            <FooterColumn
+                title="Community"
+                links={COMMUNITY_LINKS}
+                external
+            />
 
             <div className="footer-meta">
                 <span>© {new Date().getFullYear()} Beacon</span>
@@ -246,6 +339,151 @@ function Footer() {
             </div>
         </footer>
     );
+}
+
+interface BrandProps {
+    href?: string;
+    className?: string;
+}
+
+function Brand({
+    href,
+    className = ""
+}: BrandProps) {
+    const content = (
+        <>
+            <img
+                src={beaconIcon}
+                alt=""
+                className="brand-icon"
+            />
+            <span>Beacon</span>
+        </>
+    );
+
+    const classes = ["brand", className]
+        .filter(Boolean)
+        .join(" ");
+
+    if (href) {
+        return (
+            <a
+                className={classes}
+                href={href}
+                aria-label="Beacon home"
+            >
+                {content}
+            </a>
+        );
+    }
+
+    return <div className={classes}>{content}</div>;
+}
+
+interface FooterLink {
+    label: string;
+    href: string;
+}
+
+interface FooterColumnProps {
+    title: string;
+    links: readonly FooterLink[];
+    external?: boolean;
+}
+
+function FooterColumn({
+    title,
+    links,
+    external = false
+}: FooterColumnProps) {
+    return (
+        <div className="footer-column">
+            <h3>{title}</h3>
+
+            {links.map(link =>
+                external ? (
+                    <ExternalLink
+                        key={link.href}
+                        href={link.href}
+                    >
+                        {link.label}
+                    </ExternalLink>
+                ) : (
+                    <a key={link.href} href={link.href}>
+                        {link.label}
+                    </a>
+                )
+            )}
+        </div>
+    );
+}
+
+interface ButtonLinkProps {
+    href: string;
+    children: ReactNode;
+    icon?: ReactNode;
+    variant?: "primary" | "secondary";
+    className?: string;
+    external?: boolean;
+}
+
+function ButtonLink({
+    href,
+    children,
+    icon,
+    variant = "primary",
+    className = "",
+    external = false
+}: ButtonLinkProps) {
+    const classes = [
+        "button",
+        `button-${variant}`,
+        className
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    return (
+        <a
+            className={classes}
+            href={href}
+            {...getExternalLinkProps(external)}
+        >
+            {icon}
+            {children}
+        </a>
+    );
+}
+
+interface ExternalLinkProps {
+    href: string;
+    children: ReactNode;
+    className?: string;
+}
+
+function ExternalLink({
+    href,
+    children,
+    className
+}: ExternalLinkProps) {
+    return (
+        <a
+            href={href}
+            className={className}
+            {...getExternalLinkProps(true)}
+        >
+            {children}
+        </a>
+    );
+}
+
+function getExternalLinkProps(external: boolean) {
+    return external
+        ? {
+            target: "_blank",
+            rel: "noopener noreferrer"
+        }
+        : {};
 }
 
 function ShieldIcon() {
